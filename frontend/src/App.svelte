@@ -1,6 +1,6 @@
 <script>
   import logo from './assets/images/logo-universal.png'
-  import {Greet} from '../wailsjs/go/main/App.js'
+  import { Greet } from '../wailsjs/go/main/App.js'
 
   let resultText = "Please enter your name below 👇"
   let name
@@ -8,10 +8,11 @@
   function greet() {
     Greet(name).then(result => resultText = result)
   }
+
 </script>
 
 <main>
-  <img alt="Wails logo" id="logo" src="{logo}">
+  <!-- <img alt="Wails logo" id="logo" src="{logo}"> -->
   <div class="result" id="result">{resultText}</div>
   <div class="input-box" id="input">
     <input autocomplete="off" bind:value={name} class="input" id="name" type="text"/>
@@ -21,7 +22,7 @@
 
 <style>
 
-  #logo {
+  /* #logo {
     display: block;
     width: 50%;
     height: 50%;
@@ -31,7 +32,7 @@
     background-repeat: no-repeat;
     background-size: 100% 100%;
     background-origin: content-box;
-  }
+  } */
 
   .result {
     height: 20px;
