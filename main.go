@@ -2,6 +2,11 @@ package main
 
 import (
 	"embed"
+	"fmt"
+	"log/slog"
+	"os"
+
+	"github.com/joho/godotenv"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -18,16 +23,37 @@ func main() {
 	// Create an instance of the app structure
 	app := NewApp()
 
+	// Logging Configuration
+	if envErr := godotenv.Load(); envErr != nil {
+		fmt.Printf("Error loading .env file: %v\n", envErr)
+		return 
+	}
+
+	LOG_FILE := os.Getenv("LOG_FILE")
+	handlerOptions := slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	}
+
+	file, fileErr := os.OpenFile(LOG_FILE, os.O_CREATE | os.O_WRONLY | os.O_APPEND, 0666)
+	if fileErr != nil {
+		fmt.Printf("Error opening log file: %v\n", fileErr)
+		return 
+	}
+
+	defer file.Close()
+	logger := slog.New(slog.NewJSONHandler(file, &handlerOptions))
+	slog.SetDefault(logger)
+
 	// Create application with options
 	err := wails.Run(&options.App{
-		Title:  "System Monitor",
-		Width:  1024,
-		Height: 768,
+		Title:            "System Monitor",
+		Width:            1024,
+		Height:           768,
 		WindowStartState: options.Maximised,
-		MinWidth: 800,
-		MinHeight: 600,
-		Frameless: false,
-		StartHidden: false,
+		MinWidth:         80,
+		MinHeight:        60,
+		Frameless:        false,
+		StartHidden:      false,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
@@ -36,16 +62,16 @@ func main() {
 		Bind: []interface{}{
 			app,
 		},
-		OnBeforeClose: app.BeforeClose,
+		OnBeforeClose:                    app.BeforeClose,
 		EnableFraudulentWebsiteDetection: true,
 
 		Windows: &windows.Options{
-			WindowIsTranslucent: true,
-			DisableWindowIcon: false,
-			IsZoomControlEnabled: true,
-			ZoomFactor: 1.0,
+			WindowIsTranslucent:               true,
+			DisableWindowIcon:                 false,
+			IsZoomControlEnabled:              true,
+			ZoomFactor:                        1.0,
 			DisableFramelessWindowDecorations: false,
-			Theme: windows.SystemDefault,
+			Theme:                             windows.SystemDefault,
 		},
 
 		Linux: &linux.Options{
@@ -59,12 +85,13 @@ func main() {
 			},
 			Appearance: mac.NSAppearanceNameDarkAqua,
 			Preferences: &mac.Preferences{
-				TabFocusesLinks: mac.Enabled,
-				FullscreenEnabled: mac.Enabled,				
+				TabFocusesLinks:   mac.Enabled,
+				FullscreenEnabled: mac.Enabled,
 			},
 		},
-		})
+	})
 	if err != nil {
+		slog.Error("Error running application", "err", err)
 		println("Error:", err.Error())
 	}
 }

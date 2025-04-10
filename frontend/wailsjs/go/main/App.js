@@ -5,7 +5,3 @@
 export function GetRAM() {
   return window['go']['main']['App']['GetRAM']();
 }
-
-export function Greet(arg1) {
-  return window['go']['main']['App']['Greet'](arg1);
-}

@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"github.com/shirou/gopsutil/v3/mem"
 	"log/slog"
+
+	"github.com/shirou/gopsutil/v3/mem"
 )
 
 // App struct
@@ -23,11 +23,6 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-// Greet returns a greeting for the given name
-func (a *App) Greet(name string) string {
-	return fmt.Sprintf("Hello %s, It's show time!", name)
-}
-
 func (a *App) GetRAM() (map[string]float64, error) {
 	virtualMemory, err := mem.VirtualMemory()
 	if err != nil {
@@ -35,10 +30,11 @@ func (a *App) GetRAM() (map[string]float64, error) {
 		return nil, err
 	}
 
-	fmt.Printf("Total memory: %v\nFree memory: %v\n, Used memory: %v", virtualMemory.Total, virtualMemory.Free, virtualMemory.UsedPercent)
 	vMem := map[string]float64{
 		"Total memory": float64(virtualMemory.Total),
-		"Used memory":  float64(virtualMemory.Free),
+		"Used memory": float64(virtualMemory.Used),
+		"Cached memory": float64(virtualMemory.Cached),
+		"Free memory":  float64(virtualMemory.Free),
 		"Percent used": virtualMemory.UsedPercent,
 	}
 
