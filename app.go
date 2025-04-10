@@ -40,3 +40,7 @@ func (a *App) GetRAM() (map[string]float64, error) {
 
 	return vMem, nil
 }
+
+func (a *App) GetCPU() {
+	
+}
