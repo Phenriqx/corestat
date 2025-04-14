@@ -6,6 +6,7 @@
 
 <main>
     <RamMonitor/>
+    <CpuMonitor/>
 </main>
 
 <style>
