@@ -3,13 +3,22 @@ package main
 import (
 	"context"
 	"log/slog"
+	"math"
+	"time"
 
+	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/mem"
 )
 
 // App struct
 type App struct {
 	ctx context.Context
+}
+
+type CpuInformation struct {
+	CPUPercent []float64
+	CPUCores   int
+	CPUInfo    []cpu.InfoStat
 }
 
 // NewApp creates a new App application struct
@@ -41,6 +50,32 @@ func (a *App) GetRAM() (map[string]float64, error) {
 	return vMem, nil
 }
 
-func (a *App) GetCPU() {
-	
+func (a *App) GetCPU() (*CpuInformation, error) {
+	interval := time.Duration(1) * time.Second
+	usedCpu, err := cpu.Percent(interval, true)
+	if err != nil {
+		slog.Error("Error loading CPU usage", "err", err)
+		return &CpuInformation{}, err
+	}
+	for i := 0; i < len(usedCpu); i++ {
+		usedCpu[i] = math.Round(usedCpu[i])
+	}
+
+	cpuCores, err := cpu.Counts(true)
+	if err != nil {
+		slog.Error("Error loading CPU cores", "err", err)
+		return &CpuInformation{}, err
+	}
+
+	cpuInfo, err := cpu.Info()
+	if err != nil {
+		slog.Error("Error loading CPU info", "err", err)
+		return &CpuInformation{}, err
+	}
+
+	return &CpuInformation{
+		CPUPercent: usedCpu,
+		CPUCores:   cpuCores,
+		CPUInfo:   cpuInfo,
+	}, nil
 }
