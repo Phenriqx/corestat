@@ -10,6 +10,8 @@
     }
     let avgFrequency = 0
 
+
+    
     let error = null
     async function fetchCPUData() {
         try {
@@ -21,14 +23,9 @@
                 ModelName: result.CPUInfo[0].modelName
             }
 
-            if (result.CPUInfo && result.CPUInfo.length > 0) {
-                const frequencies = result.CPUInfo.map(info => info.mhz / 1000); // MHz to GHz
-                const sum = frequencies.reduce((a, b) => a + b, 0);
-                avgFrequency = sum / frequencies.length;
-            }
-            else {
-                avgFrequency = 0;
-            }
+            const sum = result.CPUFrequency.reduce((a, b) => a + b, 0)
+            avgFrequency = (sum / result.CPUFrequency.length) / 1000
+
             error = null
         }
         catch (err) {
