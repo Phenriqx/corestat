@@ -4,6 +4,10 @@ import (
 	"context"
 	"log/slog"
 	"math"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/shirou/gopsutil/v3/cpu"
@@ -19,6 +23,7 @@ type CpuInformation struct {
 	CPUPercent []float64
 	CPUCores   int
 	CPUInfo    []cpu.InfoStat
+	CPUFrequency []float64
 }
 
 // NewApp creates a new App application struct
@@ -50,6 +55,27 @@ func (a *App) GetRAM() (map[string]float64, error) {
 	return vMem, nil
 }
 
+func (a *App) FetchDynamicFrequency(cores int) ([]float64, error) {
+	frequencies := make([]float64, 0, cores)
+	for i := 0; i < cores; i++ {
+		freqPath := filepath.Join("/sys/devices/system/cpu", "cpu"+strconv.Itoa(i), "cpufreq", "scaling_cur_freq")
+		freq, err := os.ReadFile(freqPath)
+		if err != nil {
+			frequencies = append(frequencies, 0)
+			continue
+		}
+		
+		freqKHz, err := strconv.ParseFloat(strings.TrimSpace(string(freq)), 64)
+		if err != nil {
+			frequencies = append(frequencies, 0)
+			continue
+		}
+
+		frequencies = append(frequencies, freqKHz / 1000)
+	}
+	return frequencies, nil
+}
+
 func (a *App) GetCPU() (*CpuInformation, error) {
 	interval := time.Duration(1) * time.Second
 	usedCpu, err := cpu.Percent(interval, true)
@@ -73,9 +99,16 @@ func (a *App) GetCPU() (*CpuInformation, error) {
 		return &CpuInformation{}, err
 	}
 
+	cpuFrequency, err := a.FetchDynamicFrequency(cpuCores)
+	if err != nil {
+		slog.Error("Error loading CPU frequency", "err", err)
+		return &CpuInformation{}, err
+	}
+
 	return &CpuInformation{
 		CPUPercent: usedCpu,
 		CPUCores:   cpuCores,
 		CPUInfo:   cpuInfo,
+		CPUFrequency: cpuFrequency,
 	}, nil
 }
