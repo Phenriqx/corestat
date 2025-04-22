@@ -6,6 +6,10 @@ export function FetchDynamicFrequency(arg1) {
   return window['go']['main']['App']['FetchDynamicFrequency'](arg1);
 }
 
+export function FetchTemperature() {
+  return window['go']['main']['App']['FetchTemperature']();
+}
+
 export function GetCPU() {
   return window['go']['main']['App']['GetCPU']();
 }

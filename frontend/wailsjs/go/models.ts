@@ -46,6 +46,7 @@ export namespace main {
 	    CPUCores: number;
 	    CPUInfo: cpu.InfoStat[];
 	    CPUFrequency: number[];
+	    CPUTemperature: Record<string, string>;
 	
 	    static createFrom(source: any = {}) {
 	        return new CpuInformation(source);
@@ -57,6 +58,7 @@ export namespace main {
 	        this.CPUCores = source["CPUCores"];
 	        this.CPUInfo = this.convertValues(source["CPUInfo"], cpu.InfoStat);
 	        this.CPUFrequency = source["CPUFrequency"];
+	        this.CPUTemperature = source["CPUTemperature"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

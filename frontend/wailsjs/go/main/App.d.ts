@@ -4,6 +4,8 @@ import {main} from '../models';
 
 export function FetchDynamicFrequency(arg1:number):Promise<Array<number>>;
 
+export function FetchTemperature():Promise<Record<string, string>>;
+
 export function GetCPU():Promise<main.CpuInformation>;
 
 export function GetRAM():Promise<Record<string, number>>;

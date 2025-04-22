@@ -6,11 +6,10 @@
         Percentage: [], 
         Cores: 0,
         GeneralInfo: [],
-        ModelName: ""
+        ModelName: "",
     }
+    let temperature = {}
     let avgFrequency = 0
-
-
     
     let error = null
     async function fetchCPUData() {
@@ -22,6 +21,8 @@
                 GeneralInfo: result.CPUInfo,
                 ModelName: result.CPUInfo[0].modelName
             }
+
+            temperature = result.CPUTemperature
 
             const sum = result.CPUFrequency.reduce((a, b) => a + b, 0)
             avgFrequency = (sum / result.CPUFrequency.length) / 1000
@@ -53,7 +54,11 @@
             {#if cpuData.Percentage.length}
                 <li>CPU Usage (Total): {(cpuData.Percentage.reduce((a, b) => a + b, 0) / cpuData.Percentage.length).toFixed(2)}%</li>
                 {#each cpuData.Percentage as percent, i}
-                    <li>Core {i}: {percent.toFixed(2)}%</li>
+                    {#if temperature[i] > 0}
+                        <li>Core {i}: {percent.toFixed(2)}% - {temperature[i]} ºC</li>
+                    {:else}
+                        <li>Core {i}: {percent.toFixed(2)}% - {temperature[10]} ºC</li>
+                    {/if}
                 {/each}
             {/if}
         </ul>
