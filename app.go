@@ -1,11 +1,15 @@
 package main
 
 import (
+	"bufio"
 	"context"
+	"fmt"
 	"log/slog"
 	"math"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -20,10 +24,11 @@ type App struct {
 }
 
 type CpuInformation struct {
-	CPUPercent []float64
-	CPUCores   int
-	CPUInfo    []cpu.InfoStat
+	CPUPercent   []float64
+	CPUCores     int
+	CPUInfo      []cpu.InfoStat
 	CPUFrequency []float64
+	CPUTemperature map[string]string
 }
 
 // NewApp creates a new App application struct
@@ -45,16 +50,17 @@ func (a *App) GetRAM() (map[string]float64, error) {
 	}
 
 	vMem := map[string]float64{
-		"Total memory": float64(virtualMemory.Total),
-		"Used memory": float64(virtualMemory.Used),
+		"Total memory":  float64(virtualMemory.Total),
+		"Used memory":   float64(virtualMemory.Used),
 		"Cached memory": float64(virtualMemory.Cached),
-		"Free memory":  float64(virtualMemory.Free),
-		"Percent used": virtualMemory.UsedPercent,
+		"Free memory":   float64(virtualMemory.Free),
+		"Percent used":  virtualMemory.UsedPercent,
 	}
 
 	return vMem, nil
 }
 
+// LINUX ONLY
 func (a *App) FetchDynamicFrequency(cores int) ([]float64, error) {
 	frequencies := make([]float64, 0, cores)
 	for i := 0; i < cores; i++ {
@@ -64,14 +70,14 @@ func (a *App) FetchDynamicFrequency(cores int) ([]float64, error) {
 			frequencies = append(frequencies, 0)
 			continue
 		}
-		
+
 		freqKHz, err := strconv.ParseFloat(strings.TrimSpace(string(freq)), 64)
 		if err != nil {
 			frequencies = append(frequencies, 0)
 			continue
 		}
 
-		frequencies = append(frequencies, freqKHz / 1000)
+		frequencies = append(frequencies, freqKHz/1000)
 	}
 	return frequencies, nil
 }
@@ -105,10 +111,43 @@ func (a *App) GetCPU() (*CpuInformation, error) {
 		return &CpuInformation{}, err
 	}
 
+	cpuTemperatures, err := a.FetchTemperature()
+	if err != nil {
+		slog.Error("Error loading CPU temperature", "err", err)
+		return &CpuInformation{}, err
+	}
+
 	return &CpuInformation{
-		CPUPercent: usedCpu,
-		CPUCores:   cpuCores,
-		CPUInfo:   cpuInfo,
+		CPUPercent:   usedCpu,
+		CPUCores:     cpuCores,
+		CPUInfo:      cpuInfo,
 		CPUFrequency: cpuFrequency,
+		CPUTemperature: cpuTemperatures,
 	}, nil
+}
+
+func (a *App) FetchTemperature() (map[string]string, error) {
+	temperatures := make(map[string]string)
+	cmd := exec.Command("sensors")
+
+	output, err := cmd.Output()
+	if err != nil {
+		slog.Error("Error fetching temperature", "err", err)
+		return make(map[string]string), err
+	}
+
+	re := regexp.MustCompile(`(Core \d+|Package id \d+):\s+\+([\d.]+)°C`)
+	scanner := bufio.NewScanner(strings.NewReader(string(output)))
+
+	index := 0
+	for scanner.Scan() {
+		line := scanner.Text()
+		if matches := re.FindStringSubmatch(line); matches != nil {
+			core := fmt.Sprintf("%d", index)
+			temp := matches[2]
+			temperatures[core] = temp
+			index++
+		}
+	}
+	return temperatures, nil
 }
