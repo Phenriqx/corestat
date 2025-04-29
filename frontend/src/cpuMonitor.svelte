@@ -40,6 +40,13 @@
         const interval = setInterval(fetchCPUData, 1000)
         return () => clearInterval(interval)
     })
+
+    function getTemperatureClass(temperature) {
+        if (temperature > 70) return 'temp-red'
+        if (temperature > 60) return 'temp-orange'
+        if (temperature > 55) return 'temp-yellow'
+        return 'temp-blue'
+    }
 </script>
 
 <main>
@@ -55,9 +62,13 @@
                 <li>CPU Usage (Total): {(cpuData.Percentage.reduce((a, b) => a + b, 0) / cpuData.Percentage.length).toFixed(2)}%</li>
                 {#each cpuData.Percentage as percent, i}
                     {#if temperature[i] > 0}
-                        <li>Core {i}: {percent.toFixed(2)}% - {temperature[i]} ºC</li>
+                        <li>Core {i}: {percent.toFixed(2)}% - 
+                            <span class="temperature {getTemperatureClass(temperature[i])}">{temperature[i]}</span> ºC
+                        </li>
                     {:else}
-                        <li>Core {i}: {percent.toFixed(2)}% - {temperature[10]} ºC</li>
+                        <li>Core {i}: {percent.toFixed(2)}% - 
+                            <span class="temperature {getTemperatureClass(temperature[10])}">{temperature[10]}</span> ºC
+                        </li>
                     {/if}
                 {/each}
             {/if}
@@ -72,4 +83,10 @@
     li {
         margin: 10px 0;
     }
+
+    .temperature { font-weight: bold; }
+    .temp-blue { color: rgb(92, 92, 255); }
+    .temp-yellow { color: rgb(254, 254, 70);}
+    .temp-orange { color: rgb(213, 139, 0); }
+    .temp-red { color: rgb(222, 23, 12); }
 </style>

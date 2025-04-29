@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/shirou/gopsutil/v3/cpu"
+	"github.com/shirou/gopsutil/v3/disk"
 	"github.com/shirou/gopsutil/v3/mem"
 )
 
@@ -150,4 +151,38 @@ func (a *App) FetchTemperature() (map[string]string, error) {
 		}
 	}
 	return temperatures, nil
+}
+
+func (a *App) GetDiskUsage() (map[string]disk.UsageStat, error) {
+	partitions, err := disk.Partitions(true)
+	if err != nil {
+		slog.Error("Error fetching disk partitions", "err", err)
+		return nil, err
+	}
+	diskInfo := make(map[string]disk.UsageStat)
+	for _, partition := range partitions {
+		if filterPartitions(partition.Fstype) {
+			continue
+		}
+
+		usage, err := disk.Usage(partition.Mountpoint)
+		if err != nil {
+			slog.Error("Error fetching disk usage", "err", err)
+			return nil, err
+		}
+		diskInfo[usage.Path] = *usage		
+	}
+
+	return diskInfo, nil
+}
+
+func filterPartitions(fsType string) bool {
+	fsType = strings.ToLower(fsType)
+	switch fsType {
+		case "fuseblk", "tmpfs", "fusectl", "configfs", "tracefs", 
+		"devpts", "mqueue", "hugetlbfs", "debugfs", "pstorefs",
+		"binfmt_misc", "cgroup2fs", "securityfs", "efivarfs", "sysfs", "proc" :
+			return true
+	}
+	return false
 }

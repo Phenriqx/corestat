@@ -56,10 +56,6 @@
 </main>
 
 <style>
-    main {
-        padding: 20px;
-        font-family: Arial, sans-serif;
-    }
     ul {
         list-style: none;
         padding: 0;
