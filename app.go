@@ -25,10 +25,10 @@ type App struct {
 }
 
 type CpuInformation struct {
-	CPUPercent   []float64
-	CPUCores     int
-	CPUInfo      []cpu.InfoStat
-	CPUFrequency []float64
+	CPUPercent     []float64
+	CPUCores       int
+	CPUInfo        []cpu.InfoStat
+	CPUFrequency   []float64
 	CPUTemperature map[string]string
 }
 
@@ -119,10 +119,10 @@ func (a *App) GetCPU() (*CpuInformation, error) {
 	}
 
 	return &CpuInformation{
-		CPUPercent:   usedCpu,
-		CPUCores:     cpuCores,
-		CPUInfo:      cpuInfo,
-		CPUFrequency: cpuFrequency,
+		CPUPercent:     usedCpu,
+		CPUCores:       cpuCores,
+		CPUInfo:        cpuInfo,
+		CPUFrequency:   cpuFrequency,
 		CPUTemperature: cpuTemperatures,
 	}, nil
 }
@@ -159,18 +159,33 @@ func (a *App) GetDiskUsage() (map[string]disk.UsageStat, error) {
 		slog.Error("Error fetching disk partitions", "err", err)
 		return nil, err
 	}
+
 	diskInfo := make(map[string]disk.UsageStat)
 	for _, partition := range partitions {
 		if filterPartitions(partition.Fstype) {
+			slog.Info("Skipping filtered partition", "fstype", partition.Fstype)
+			continue
+		}
+		
+		usage, err := disk.Usage(partition.Mountpoint)
+		if err != nil {
+			slog.Error("Error fetching disk usage",
+				"mountpoint", partition.Mountpoint,
+				"err", err)
+			continue // Skip this partition instead of returning error
+		}
+		if usage.Total == 0 {
+			slog.Info("Skipping partition with total size 0", "mountpoint", partition.Mountpoint)
 			continue
 		}
 
-		usage, err := disk.Usage(partition.Mountpoint)
-		if err != nil {
-			slog.Error("Error fetching disk usage", "err", err)
-			return nil, err
-		}
-		diskInfo[usage.Path] = *usage		
+		slog.Info("Disk usage", "mountpoint", usage.Path, "total", usage.Total, "free", usage.Free) 
+		diskInfo[usage.Path] = *usage
+	}
+
+	if len(diskInfo) == 0 {
+		slog.Error("No valid disk information found")
+		return nil, fmt.Errorf("no valid disk information found")
 	}
 
 	return diskInfo, nil
@@ -179,10 +194,10 @@ func (a *App) GetDiskUsage() (map[string]disk.UsageStat, error) {
 func filterPartitions(fsType string) bool {
 	fsType = strings.ToLower(fsType)
 	switch fsType {
-		case "fuseblk", "tmpfs", "fusectl", "configfs", "tracefs", 
+	case "fuseblk", "tmpfs", "fusectl", "configfs", "tracefs",
 		"devpts", "mqueue", "hugetlbfs", "debugfs", "pstorefs",
-		"binfmt_misc", "cgroup2fs", "securityfs", "efivarfs", "sysfs", "proc" :
-			return true
+		"binfmt_misc", "cgroup2fs", "securityfs", "efivarfs", "sysfs", "proc", "devtmpfs":
+		return true
 	}
 	return false
 }
