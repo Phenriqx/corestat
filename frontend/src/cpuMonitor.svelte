@@ -15,6 +15,9 @@
     async function fetchCPUData() {
         try {
             const result = await GetCPU()
+            if (!result) {
+                throw new Error('No CPU data received from backend')
+            }
             cpuData = {
                 Percentage: result.CPUPercent,
                 Cores: result.CPUCores,

@@ -12,16 +12,7 @@
         if (!result) {
           throw new Error("No disk data received from backend");
         }
-
         diskData = result
-
-        // diskData = Object.entries(result).map(([mountpoint, usage]) => {
-        //     return {
-        //     mountpoint,
-        //     ...usage,
-        //     };
-        // });
-
         error = null;
     } catch (err) {
         console.error("Error fetching disk usage", err);
