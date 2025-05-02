@@ -14,6 +14,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Phenriqx/corestat/helpers"
+
+	"github.com/shirou/gopsutil/v3/host"
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/disk"
 	"github.com/shirou/gopsutil/v3/mem"
@@ -22,6 +25,10 @@ import (
 // App struct
 type App struct {
 	ctx context.Context
+}
+
+type HostInformation struct {
+
 }
 
 type CpuInformation struct {
@@ -83,12 +90,12 @@ func (a *App) FetchDynamicFrequency(cores int) ([]float64, error) {
 	return frequencies, nil
 }
 
-func (a *App) GetCPU() (*CpuInformation, error) {
+func (a *App) GetCPU() (*helpers.CPUInformation, error) {
 	interval := time.Duration(1) * time.Second
 	usedCpu, err := cpu.Percent(interval, true)
 	if err != nil {
 		slog.Error("Error loading CPU usage", "err", err)
-		return &CpuInformation{}, err
+		return nil, err
 	}
 	for i := 0; i < len(usedCpu); i++ {
 		usedCpu[i] = math.Round(usedCpu[i])
@@ -97,28 +104,28 @@ func (a *App) GetCPU() (*CpuInformation, error) {
 	cpuCores, err := cpu.Counts(true)
 	if err != nil {
 		slog.Error("Error loading CPU cores", "err", err)
-		return &CpuInformation{}, err
+		return nil, err
 	}
 
 	cpuInfo, err := cpu.Info()
 	if err != nil {
 		slog.Error("Error loading CPU info", "err", err)
-		return &CpuInformation{}, err
+		return nil, err
 	}
 
 	cpuFrequency, err := a.FetchDynamicFrequency(cpuCores)
 	if err != nil {
 		slog.Error("Error loading CPU frequency", "err", err)
-		return &CpuInformation{}, err
+		return nil, err
 	}
 
 	cpuTemperatures, err := a.FetchTemperature()
 	if err != nil {
 		slog.Error("Error loading CPU temperature", "err", err)
-		return &CpuInformation{}, err
+		return nil, err
 	}
 
-	return &CpuInformation{
+	return &helpers.CPUInformation{
 		CPUPercent:     usedCpu,
 		CPUCores:       cpuCores,
 		CPUInfo:        cpuInfo,
@@ -162,7 +169,7 @@ func (a *App) GetDiskUsage() (map[string]disk.UsageStat, error) {
 
 	diskInfo := make(map[string]disk.UsageStat)
 	for _, partition := range partitions {
-		if filterPartitions(partition.Fstype) {
+		if helpers.FilterPartitions(partition.Fstype) {
 			slog.Info("Skipping filtered partition", "fstype", partition.Fstype)
 			continue
 		}
@@ -191,13 +198,16 @@ func (a *App) GetDiskUsage() (map[string]disk.UsageStat, error) {
 	return diskInfo, nil
 }
 
-func filterPartitions(fsType string) bool {
-	fsType = strings.ToLower(fsType)
-	switch fsType {
-	case "fuseblk", "tmpfs", "fusectl", "configfs", "tracefs",
-		"devpts", "mqueue", "hugetlbfs", "debugfs", "pstorefs",
-		"binfmt_misc", "cgroup2fs", "securityfs", "efivarfs", "sysfs", "proc", "devtmpfs":
-		return true
+func (a *App) GetHostInfo() (*helpers.HostInformation, error) {
+	majorInfo, err := host.Info()
+	if err != nil {
+		slog.Error("Error loading host info", "err", err)
+		return nil, err
 	}
-	return false
+	uptime := helpers.ParseTime(int(majorInfo.Uptime))
+	
+	return &helpers.HostInformation{
+		MajorInfo: majorInfo,
+		Uptime:    uptime,
+	}, nil
 }

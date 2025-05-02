@@ -18,6 +18,10 @@ export function GetDiskUsage() {
   return window['go']['main']['App']['GetDiskUsage']();
 }
 
+export function GetHostInfo() {
+  return window['go']['main']['App']['GetHostInfo']();
+}
+
 export function GetRAM() {
   return window['go']['main']['App']['GetRAM']();
 }

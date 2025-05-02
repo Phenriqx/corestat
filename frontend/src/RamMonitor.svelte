@@ -14,6 +14,9 @@
     async function fetchRAM() {
         try {
             const result = await GetRAM()
+            if (!result) {
+                throw new Error("No RAM data received from backend");
+            }
             ram = {
                 "Total memory": result["Total memory"],
                 "Used memory": result["Used memory"],

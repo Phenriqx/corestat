@@ -2,6 +2,7 @@
     import RamMonitor from "./RamMonitor.svelte";
     import CpuMonitor from "./cpuMonitor.svelte";
     import DiskMonitor from "./diskMonitor.svelte";
+    import HostMonitor from "./hostMonitor.svelte";
 
 </script>
 
@@ -9,6 +10,7 @@
     <RamMonitor/>
     <CpuMonitor/>
     <DiskMonitor/>
+    <HostMonitor/>
 </main>
 
 <style>

@@ -1,6 +1,6 @@
-module system-monitor
+module github.com/Phenriqx/corestat
 
-go 1.23
+go 1.24.2
 
 require (
 	github.com/joho/godotenv v1.5.1
@@ -42,5 +42,3 @@ require (
 	golang.org/x/sys v0.30.0 // indirect
 	golang.org/x/text v0.22.0 // indirect
 )
-
-// replace github.com/wailsapp/wails/v2 v2.10.1 => /home/phenriqx/go/pkg/mod
