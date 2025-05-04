@@ -48,12 +48,32 @@
                 <small>{process["Cwd"]}</small>
                 <p>PID: {process["PID"]}</p>
                 <p>Memory: {toGB(process["MemoryInfo"]["rss"])} GB</p>
-                <p>CPU: {process.cpu}%</p>
+                <p>CPU: {process["CPUPercent"].toFixed(2)}%</p>
+                <p>Threads: {process["Threads"]}</p>
             </div>
         {/each}
     {/if}
 </main>
 
 <style>
+    main {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+    }
 
+    .process-info {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+
+    .process-info h3 {
+        margin: 0;
+        color: #007BFF;
+    }
+
+    .process-info small {
+        display: block;
+        color: #666;
+    }
 </style>
