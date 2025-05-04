@@ -20,6 +20,7 @@ import (
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/disk"
 	"github.com/shirou/gopsutil/v3/mem"
+	"github.com/shirou/gopsutil/v3/process"
 )
 
 // App struct
@@ -210,4 +211,70 @@ func (a *App) GetHostInfo() (*helpers.HostInformation, error) {
 		MajorInfo: majorInfo,
 		Uptime:    uptime,
 	}, nil
+}
+
+func (a *App) GetProcesses() (*helpers.ProcessInformation, error) {
+	procs, err := process.Processes()
+	if err != nil {
+		slog.Error("Error loading processes: ", "err", err)
+		return nil, err 
+	}
+
+	var infos []helpers.ProcessInfo
+
+	for _, proc := range procs {
+		name, err := proc.Name()
+		if err != nil {
+			slog.Error("Error loading process name: ", "err", err)
+			continue
+		}
+		cwd, err := proc.Cwd()
+		if err != nil {
+			slog.Error("Error loading process cwd: ", "err", err)
+			continue
+		}
+		hostUser, err := proc.Username()
+		if err != nil {
+			slog.Error("Error loading process username: ", "err", err)
+			continue
+		}		
+		cpuPercent, err := proc.CPUPercent()
+		if err != nil {
+			slog.Error("Error loading process CPU percent: ", "err", err)
+			continue
+		}
+		PID, err := proc.Ppid()
+		if err != nil {
+			slog.Error("Error loading process PID: ", "err", err)
+			continue
+		}
+		memory, err := proc.MemoryInfo()
+		if err != nil {
+			slog.Error("Error loading process memory info: ", "err", err)
+			continue
+		}
+		threads, err := proc.NumThreads()
+		if err != nil {
+			slog.Error("Error loading process threads: ", "err", err)
+			continue
+		}
+
+		info := helpers.ProcessInfo {
+			Name: name,
+			Cwd: cwd,
+			HostUser: hostUser,
+			CPUPercent: cpuPercent,
+			PID: PID,
+			MemoryInfo: *memory,
+			Threads: threads,
+		}
+		infos = append(infos, info)
+	}
+	result := helpers.ProcessInformation(infos)
+	if len(result) == 0 {
+		slog.Error("No valid process information found")
+		return nil, fmt.Errorf("no valid process information found")
+	}
+
+	return &result, nil
 }

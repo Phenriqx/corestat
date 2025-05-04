@@ -22,6 +22,10 @@ export function GetHostInfo() {
   return window['go']['main']['App']['GetHostInfo']();
 }
 
+export function GetProcesses() {
+  return window['go']['main']['App']['GetProcesses']();
+}
+
 export function GetRAM() {
   return window['go']['main']['App']['GetRAM']();
 }

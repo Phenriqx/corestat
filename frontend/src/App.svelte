@@ -3,7 +3,7 @@
     import CpuMonitor from "./cpuMonitor.svelte";
     import DiskMonitor from "./diskMonitor.svelte";
     import HostMonitor from "./hostMonitor.svelte";
-
+    import ProcessMonitor from "./processMonitor.svelte";
 </script>
 
 <main>
@@ -11,6 +11,7 @@
     <CpuMonitor/>
     <DiskMonitor/>
     <HostMonitor/>
+    <ProcessMonitor/>
 </main>
 
 <style>

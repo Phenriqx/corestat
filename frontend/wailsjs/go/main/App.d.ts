@@ -13,4 +13,6 @@ export function GetDiskUsage():Promise<Record<string, disk.UsageStat>>;
 
 export function GetHostInfo():Promise<helpers.HostInformation>;
 
+export function GetProcesses():Promise<helpers.ProcessInformation>;
+
 export function GetRAM():Promise<Record<string, number>>;
