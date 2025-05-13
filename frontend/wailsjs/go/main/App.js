@@ -29,3 +29,11 @@ export function GetProcesses() {
 export function GetRAM() {
   return window['go']['main']['App']['GetRAM']();
 }
+
+export function SigKillProcess(arg1) {
+  return window['go']['main']['App']['SigKillProcess'](arg1);
+}
+
+export function SigTerminateProcess(arg1) {
+  return window['go']['main']['App']['SigTerminateProcess'](arg1);
+}

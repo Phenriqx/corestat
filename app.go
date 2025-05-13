@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"math"
@@ -16,9 +17,9 @@ import (
 
 	"github.com/Phenriqx/corestat/helpers"
 
-	"github.com/shirou/gopsutil/v3/host"
 	"github.com/shirou/gopsutil/v3/cpu"
 	"github.com/shirou/gopsutil/v3/disk"
+	"github.com/shirou/gopsutil/v3/host"
 	"github.com/shirou/gopsutil/v3/mem"
 	"github.com/shirou/gopsutil/v3/process"
 )
@@ -236,6 +237,7 @@ func (a *App) GetProcesses() (*helpers.ProcessInformation, error) {
 		hostUser, err := proc.Username()
 		if err != nil {
 			slog.Error("Error loading process username: ", "err", err)
+			// errors.Is(err, process.ErrorNotPermitted.Error())
 			continue
 		}		
 		cpuPercent, err := proc.CPUPercent()
@@ -277,4 +279,34 @@ func (a *App) GetProcesses() (*helpers.ProcessInformation, error) {
 	}
 
 	return &result, nil
+}
+
+func (a *App) SigKillProcess(pid int32) error {
+	proc, err := process.NewProcess(pid)
+	if err != nil {
+		slog.Error("Error creating process", "err", err)
+		return fmt.Errorf("error creating process: %v", err)
+	}
+
+	if err := proc.Kill(); err != nil {
+		slog.Error("Error killing process", "err", err)
+		return fmt.Errorf("error killing process: %v", err)
+	}
+
+	return nil
+}
+
+func (a *App) SigTerminateProcess(pid int32) error {
+	proc, err := process.NewProcess(pid)
+	if err != nil {
+		slog.Error("Error creating process", "err", err)
+		return fmt.Errorf("error creating process: %v", err)
+	}
+
+	if err := proc.Terminate(); err != nil {
+		slog.Error("Error terminating process", "err", err)
+		return fmt.Errorf("error terminating process: %v", err)
+	}
+
+	return nil
 }

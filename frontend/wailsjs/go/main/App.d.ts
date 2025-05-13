@@ -16,3 +16,7 @@ export function GetHostInfo():Promise<helpers.HostInformation>;
 export function GetProcesses():Promise<helpers.ProcessInformation>;
 
 export function GetRAM():Promise<Record<string, number>>;
+
+export function SigKillProcess(arg1:number):Promise<void>;
+
+export function SigTerminateProcess(arg1:number):Promise<void>;
