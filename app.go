@@ -264,6 +264,20 @@ func (a *App) GetProcesses() (*helpers.ProcessInformation, error) {
 			continue
 		}
 
+		procChildren, err := helpers.GetProcessChildren(parentProcess)
+		if err != nil {
+			slog.Error("Error getting process's children.", "err", err)
+			continue
+		} else if len(procChildren) == 0 {
+			procChildren = nil
+		}
+
+		procChild, err := helpers.ProcessChild(procChildren)
+		if err != nil {
+			slog.Error("Error getting process's children information.", "err", err)
+			continue
+		}
+
 		info := helpers.ProcessInfo{
 			Name:       name,
 			Cwd:        cwd,
@@ -272,9 +286,11 @@ func (a *App) GetProcesses() (*helpers.ProcessInformation, error) {
 			PID:        PID,
 			MemoryInfo: *memory,
 			Threads:    threads,
+			Children:   *procChild,
 		}
 		infos = append(infos, info)
 	}
+
 	result := helpers.ProcessInformation(infos)
 	if len(result) == 0 {
 		slog.Error("No valid process information found")

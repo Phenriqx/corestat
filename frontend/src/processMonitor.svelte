@@ -88,10 +88,19 @@
         <li class="process-row" on:click={() => openMenu(process)}>
           <h3>{process["Name"]}</h3>
           <small>{process["Cwd"]}</small>
+          <small>{process["HostUser"]}</small>
           <p>PID: {process["PID"]}</p>
           <p>Memory: {toGB(process["MemoryInfo"]["rss"])} GB</p>
           <p>CPU: {process["CPUPercent"].toFixed(2)}%</p>
           <p>Threads: {process["Threads"]}</p>
+
+         {#if process["Children"] && process["Children"].length > 0}
+              {#each process["Children"] as child}
+                <li>Name: {child["Name"]}</li>
+                <li>Memory: {child["MemoryInfo"]["rss"]}</li>
+              {/each}
+         {/if} 
+          
         </li>
       {/each}
     </ul>

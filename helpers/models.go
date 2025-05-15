@@ -27,6 +27,16 @@ type ProcessInfo struct {
 	PID        int32
 	MemoryInfo process.MemoryInfoStat
 	Threads    int32
+	Children   ChildrenInformation
 }
 
 type ProcessInformation []ProcessInfo
+
+type ChildrenInfo struct  {
+	Name string
+	Cwd string
+	PID int32
+	MemoryInfo process.MemoryInfoStat
+}
+
+type ChildrenInformation []ChildrenInfo
