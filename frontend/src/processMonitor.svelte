@@ -4,8 +4,10 @@
     GetProcesses,
     SigKillProcess,
     SigTerminateProcess,
+    GetRemainingBattery
   } from "../wailsjs/go/main/App.js";
 
+  let battery = 0;
   let processData = {};
   let error = null;
   let selectedProcess = null;
@@ -18,6 +20,7 @@
         throw new Error("No process data received from backend");
       }
 
+      battery = await GetRemainingBattery()
       processData = result;
 
       error = null;
@@ -84,6 +87,7 @@
     <p style="color: red;">{error}</p>
   {:else}
     <ul>
+      <strong>Battery: {battery}%</strong>
       {#each Object.entries(processData) as [_, process]}
         <li class="process-row" on:click={() => openMenu(process)}>
           <h3>{process["Name"]}</h3>

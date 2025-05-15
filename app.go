@@ -341,3 +341,19 @@ func (a *App) SigTerminateProcess(pid int32) error {
 
 	return nil
 }
+
+func (a *App) GetRemainingBattery() (int, error) {
+	path := fmt.Sprintf("/sys/class/power_supply/BAT0/capacity")
+	capacity, err := os.ReadFile(path)
+	if err != nil {
+		slog.Error("Error reading from file", "path", path, "err", err)
+		return 1, err
+	}
+	battery, err := strconv.Atoi(strings.Trim(string(capacity), "\n"))
+	if err != nil {
+		slog.Error("Error parsing int", "err", err)
+		return 1, err
+	}
+
+	return battery, nil 
+}

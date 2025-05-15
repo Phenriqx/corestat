@@ -30,6 +30,10 @@ export function GetRAM() {
   return window['go']['main']['App']['GetRAM']();
 }
 
+export function GetRemainingBattery() {
+  return window['go']['main']['App']['GetRemainingBattery']();
+}
+
 export function SigKillProcess(arg1) {
   return window['go']['main']['App']['SigKillProcess'](arg1);
 }
