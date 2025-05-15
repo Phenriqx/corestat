@@ -26,7 +26,7 @@ type ProcessInfo struct {
 	CPUPercent float64
 	PID        int32
 	MemoryInfo process.MemoryInfoStat
-	Threads int32
+	Threads    int32
 }
 
 type ProcessInformation []ProcessInfo

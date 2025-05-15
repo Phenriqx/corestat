@@ -1,6 +1,10 @@
 <script>
   import { onMount } from "svelte";
-  import { GetProcesses, SigKillProcess, SigTerminateProcess } from "../wailsjs/go/main/App.js";
+  import {
+    GetProcesses,
+    SigKillProcess,
+    SigTerminateProcess,
+  } from "../wailsjs/go/main/App.js";
 
   let processData = {};
   let error = null;
@@ -35,27 +39,27 @@
 
   async function killProcess() {
     try {
-      await SigKillProcess(selectedProcess.PID)
+      await SigKillProcess(selectedProcess.PID);
       alert(
-        `Killing process ${selectedProcess.Name} (PID: ${selectedProcess.PID})`
+        `Killing process ${selectedProcess.Name} (PID: ${selectedProcess.PID})`,
       );
       closeMenu();
     } catch (err) {
-        console.error(err)
-        throw new Error("Error terminating process: ", err)
+      console.error(err);
+      throw new Error("Error terminating process: ", err);
     }
- }
+  }
 
   async function terminateProcess() {
     try {
-      await SigTerminateProcess(selectedProcess.PID)
+      await SigTerminateProcess(selectedProcess.PID);
       alert(
-        `Terminating process ${selectedProcess.Name} (PID: ${selectedProcess.PID})`
+        `Terminating process ${selectedProcess.Name} (PID: ${selectedProcess.PID})`,
       );
-      closeMenu()
+      closeMenu();
     } catch (err) {
-        console.error(err)
-        throw new Error("Error terminating process: ", err)
+      console.error(err);
+      throw new Error("Error terminating process: ", err);
     }
   }
 
@@ -80,7 +84,7 @@
     <p style="color: red;">{error}</p>
   {:else}
     <ul>
-      {#each Object.entries(processData) as [pid, process]}
+      {#each Object.entries(processData) as [_, process]}
         <li class="process-row" on:click={() => openMenu(process)}>
           <h3>{process["Name"]}</h3>
           <small>{process["Cwd"]}</small>

@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"context"
-	"errors"
 	"fmt"
 	"log/slog"
 	"math"
@@ -30,7 +29,6 @@ type App struct {
 }
 
 type HostInformation struct {
-
 }
 
 type CpuInformation struct {
@@ -175,7 +173,7 @@ func (a *App) GetDiskUsage() (map[string]disk.UsageStat, error) {
 			slog.Info("Skipping filtered partition", "fstype", partition.Fstype)
 			continue
 		}
-		
+
 		usage, err := disk.Usage(partition.Mountpoint)
 		if err != nil {
 			slog.Error("Error fetching disk usage",
@@ -188,7 +186,7 @@ func (a *App) GetDiskUsage() (map[string]disk.UsageStat, error) {
 			continue
 		}
 
-		slog.Info("Disk usage", "mountpoint", usage.Path, "total", usage.Total, "free", usage.Free) 
+		slog.Info("Disk usage", "mountpoint", usage.Path, "total", usage.Total, "free", usage.Free)
 		diskInfo[usage.Path] = *usage
 	}
 
@@ -207,7 +205,7 @@ func (a *App) GetHostInfo() (*helpers.HostInformation, error) {
 		return nil, err
 	}
 	uptime := helpers.ParseTime(int(majorInfo.Uptime))
-	
+
 	return &helpers.HostInformation{
 		MajorInfo: majorInfo,
 		Uptime:    uptime,
@@ -218,57 +216,62 @@ func (a *App) GetProcesses() (*helpers.ProcessInformation, error) {
 	procs, err := process.Processes()
 	if err != nil {
 		slog.Error("Error loading processes: ", "err", err)
-		return nil, err 
+		return nil, err
 	}
 
 	var infos []helpers.ProcessInfo
 
 	for _, proc := range procs {
-		name, err := proc.Name()
+		parentProcess, err := proc.Parent()
+		if err != nil {
+			slog.Error("error getting parent process", "err", err)
+			continue
+		}
+
+		name, err := parentProcess.Name()
 		if err != nil {
 			slog.Error("Error loading process name: ", "err", err)
 			continue
 		}
-		cwd, err := proc.Cwd()
+		cwd, err := parentProcess.Cwd()
 		if err != nil {
 			slog.Error("Error loading process cwd: ", "err", err)
 			continue
 		}
-		hostUser, err := proc.Username()
+		hostUser, err := parentProcess.Username()
 		if err != nil {
 			slog.Error("Error loading process username: ", "err", err)
-			// errors.Is(err, process.ErrorNotPermitted.Error())
 			continue
-		}		
-		cpuPercent, err := proc.CPUPercent()
+		}
+		cpuPercent, err := parentProcess.CPUPercent()
 		if err != nil {
 			slog.Error("Error loading process CPU percent: ", "err", err)
 			continue
 		}
-		PID, err := proc.Ppid()
+		PID, err := parentProcess.Ppid()
 		if err != nil {
 			slog.Error("Error loading process PID: ", "err", err)
 			continue
 		}
-		memory, err := proc.MemoryInfo()
+		memory, err := parentProcess.MemoryInfo()
 		if err != nil {
 			slog.Error("Error loading process memory info: ", "err", err)
 			continue
 		}
-		threads, err := proc.NumThreads()
+		threads, err := parentProcess.NumThreads()
 		if err != nil {
 			slog.Error("Error loading process threads: ", "err", err)
 			continue
 		}
 
-		info := helpers.ProcessInfo {
-			Name: name,
-			Cwd: cwd,
-			HostUser: hostUser,
+		info := helpers.ProcessInfo{
+			Name:       name,
+			Cwd:        cwd,
+			HostUser:   hostUser,
 			CPUPercent: cpuPercent,
-			PID: PID,
+			PID:        PID,
 			MemoryInfo: *memory,
-			Threads: threads,
+			Threads:    threads,
 		}
 		infos = append(infos, info)
 	}
@@ -288,6 +291,12 @@ func (a *App) SigKillProcess(pid int32) error {
 		return fmt.Errorf("error creating process: %v", err)
 	}
 
+	result, err := proc.IsRunning()
+	if !result {
+		slog.Error("Process is not running", "pid", pid, "err", err)
+		return fmt.Errorf("process with PID %d is not running", pid)
+	}
+
 	if err := proc.Kill(); err != nil {
 		slog.Error("Error killing process", "err", err)
 		return fmt.Errorf("error killing process: %v", err)
@@ -301,6 +310,12 @@ func (a *App) SigTerminateProcess(pid int32) error {
 	if err != nil {
 		slog.Error("Error creating process", "err", err)
 		return fmt.Errorf("error creating process: %v", err)
+	}
+
+	result, err := proc.IsRunning()
+	if !result {
+		slog.Error("Process is not running", "pid", pid, "err", err)
+		return fmt.Errorf("process with PID %d is not running", pid)
 	}
 
 	if err := proc.Terminate(); err != nil {
