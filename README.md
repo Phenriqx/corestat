@@ -1,16 +1,32 @@
-# README
+# 🖥️ CoreStat
 
-## About
+**CoreStat** is a lightweight, cross-platform system monitoring application built with **Golang**. It provides real-time insights into running processes, CPU usage, memory consumption, and more, with an intuitive user interface and modern features.
 
-This is the official Wails Svelte template.
+## 🚀 Features
 
-## Live Development
+- 🔍 View detailed system process information (PID, memory, CPU, threads, etc.)
+- 📊 Real-time memory and CPU usage stats
+- 🧬 Displays parent-child process hierarchy
+- 📂 Collapse/expand child processes
+- 🧠 Built with performance in mind using native Go
+- 🌐 Web-based or desktop UI (based on your tech stack like Wails/Svelte)
 
-To run in live development mode, run `wails dev` in the project directory. This will run a Vite development
-server that will provide very fast hot reload of your frontend changes. If you want to develop in a browser
-and have access to your Go methods, there is also a dev server that runs on http://localhost:34115. Connect
-to this in your browser, and you can call your Go code from devtools.
+## 🛠️ Technologies Used
 
-## Building
+- **Go** – Backend logic and system resource monitoring
+- **[Svelte](https://svelte.dev/)** – Reactive front-end (if using Wails or web UI)
+- **[gopsutil](https://github.com/shirou/gopsutil)** – System information gathering
+- **[Wails](https://wails.io/)** (if used) – To build cross-platform desktop apps with Go + Web
 
-To build a redistributable, production mode package, use `wails build`.
+## 🧑‍💻 Installation
+
+### Prerequisites
+
+- [Go](https://golang.org/dl/) (version 1.18+)
+- Node.js & npm (if using Svelte or Wails frontend)
+
+### Clone the repository
+
+```bash
+git clone https://github.com/yourusername/corestat.git
+cd corestat
