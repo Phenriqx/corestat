@@ -9,21 +9,21 @@
 - 🧬 Displays parent-child process hierarchy
 - 📂 Collapse/expand child processes
 - 🧠 Built with performance in mind using native Go
-- 🌐 Web-based or desktop UI (based on your tech stack like Wails/Svelte)
+- 🌐 Web-based or desktop UI
 
 ## 🛠️ Technologies Used
 
 - **Go** – Backend logic and system resource monitoring
-- **[Svelte](https://svelte.dev/)** – Reactive front-end (if using Wails or web UI)
+- **[Svelte](https://svelte.dev/)** – Reactive front-end
 - **[gopsutil](https://github.com/shirou/gopsutil)** – System information gathering
-- **[Wails](https://wails.io/)** (if used) – To build cross-platform desktop apps with Go + Web
+- **[Wails](https://wails.io/)** – To build cross-platform desktop apps with Go + Web
 
 ## 🧑‍💻 Installation
 
 ### Prerequisites
 
 - [Go](https://golang.org/dl/) (version 1.18+)
-- Node.js & npm (if using Svelte or Wails frontend)
+- Node.js & npm
 
 ### Clone the repository
 
