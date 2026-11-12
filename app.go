@@ -222,71 +222,10 @@ func (a *App) GetProcesses() (*helpers.ProcessInformation, error) {
 	var infos []helpers.ProcessInfo
 
 	for _, proc := range procs {
-		parentProcess, err := proc.Parent()
+		info, err := processInfo(proc)
 		if err != nil {
-			slog.Error("error getting parent process", "err", err)
+			// Processes can exit while a snapshot is being collected.
 			continue
-		}
-
-		name, err := parentProcess.Name()
-		if err != nil {
-			slog.Error("Error loading process name: ", "err", err)
-			continue
-		}
-		cwd, err := parentProcess.Cwd()
-		if err != nil {
-			slog.Error("Error loading process cwd: ", "err", err)
-			continue
-		}
-		hostUser, err := parentProcess.Username()
-		if err != nil {
-			slog.Error("Error loading process username: ", "err", err)
-			continue
-		}
-		cpuPercent, err := parentProcess.CPUPercent()
-		if err != nil {
-			slog.Error("Error loading process CPU percent: ", "err", err)
-			continue
-		}
-		Ppid, err := parentProcess.Ppid()
-		if err != nil {
-			slog.Error("Error loading process PPID: ", "err", err)
-			continue
-		}
-		memory, err := parentProcess.MemoryInfo()
-		if err != nil {
-			slog.Error("Error loading process memory info: ", "err", err)
-			continue
-		}
-		threads, err := parentProcess.NumThreads()
-		if err != nil {
-			slog.Error("Error loading process threads: ", "err", err)
-			continue
-		}
-
-		procChildren, err := helpers.GetProcessChildren(parentProcess)
-		if err != nil {
-			slog.Error("Error getting process's children.", "err", err)
-			continue
-		} else if len(procChildren) == 0 {
-			procChildren = nil
-		}
-
-		procChild, err := helpers.ProcessChild(procChildren)
-		if err != nil {
-			slog.Error("Error getting process's children information.", "err", err)
-			continue
-		}
-
-		info := helpers.ProcessInfo{
-			Name:       name,
-			Cwd:        cwd,
-			HostUser:   hostUser,
-			CPUPercent: cpuPercent,
-			PID:        Ppid,
-			MemoryInfo: *memory,
-			Threads:    threads,
-			Children:   *procChild,
 		}
 		infos = append(infos, info)
 	}
@@ -298,6 +237,48 @@ func (a *App) GetProcesses() (*helpers.ProcessInformation, error) {
 	}
 
 	return &result, nil
+}
+
+func processInfo(proc *process.Process) (helpers.ProcessInfo, error) {
+	name, err := proc.Name()
+	if err != nil {
+		return helpers.ProcessInfo{}, err
+	}
+	memory, err := proc.MemoryInfo()
+	if err != nil || memory == nil {
+		return helpers.ProcessInfo{}, fmt.Errorf("memory info unavailable for PID %d: %v", proc.Pid, err)
+	}
+	cpuPercent, err := proc.CPUPercent()
+	if err != nil {
+		return helpers.ProcessInfo{}, err
+	}
+	threads, err := proc.NumThreads()
+	if err != nil {
+		return helpers.ProcessInfo{}, err
+	}
+
+	// These fields are supplementary; lack of access should not hide a process.
+	cwd, _ := proc.Cwd()
+	hostUser, _ := proc.Username()
+	children, err := helpers.GetProcessChildren(proc)
+	if err != nil {
+		children = nil
+	}
+	childInfo, err := helpers.ProcessChild(children)
+	if err != nil {
+		return helpers.ProcessInfo{}, err
+	}
+
+	return helpers.ProcessInfo{
+		Name:       name,
+		Cwd:        cwd,
+		HostUser:   hostUser,
+		CPUPercent: cpuPercent,
+		PID:        proc.Pid,
+		MemoryInfo: *memory,
+		Threads:    threads,
+		Children:   *childInfo,
+	}, nil
 }
 
 func (a *App) SigKillProcess(pid int32) error {
