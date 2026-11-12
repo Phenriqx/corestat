@@ -45,26 +45,27 @@ func GetProcessChildren(p *process.Process) ([]*process.Process, error) {
 }
 
 func ProcessChild(children []*process.Process) (*ChildrenInformation, error) {
-	var procs []ChildrenInfo
-	
+	procs := make(ChildrenInformation, 0, len(children))
+
 	for _, child := range children {
-		name, _ := child.Name()
-		cwd, _ := child.Cwd()
-		memory, _ := child.MemoryInfo()
-		pid, _ := child.Ppid()
-
-		proc := ChildrenInfo {
-			Name: name,
-			Cwd: cwd,
-			MemoryInfo: *memory,
-			PID: pid,
+		if child == nil {
+			continue
 		}
-		procs = append(procs, proc)
+		memory, err := child.MemoryInfo()
+		if err != nil || memory == nil {
+			continue // The process may have exited or become inaccessible.
+		}
+		name, err := child.Name()
+		if err != nil {
+			continue
+		}
+		cwd, _ := child.Cwd() // Some processes do not expose their working directory.
+		procs = append(procs, ChildrenInfo{
+			Name:       name,
+			Cwd:        cwd,
+			MemoryInfo: *memory,
+			PID:        child.Pid,
+		})
 	}
-	result := ChildrenInformation(procs)
-	if len(result) == 0 {
-		return nil, fmt.Errorf("no valid process information found")
-	}
-
-	return &result, nil
+	return &procs, nil
 }

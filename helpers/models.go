@@ -32,11 +32,12 @@ type ProcessInfo struct {
 
 type ProcessInformation []ProcessInfo
 
-type ChildrenInfo struct  {
-	Name string
-	Cwd string
-	PID int32
+type ChildrenInfo struct {
+	Name       string
+	Cwd        string
+	PID        int32
 	MemoryInfo process.MemoryInfoStat
 }
 
 type ChildrenInformation []ChildrenInfo
+

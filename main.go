@@ -26,7 +26,7 @@ func main() {
 	// Logging Configuration
 	if envErr := godotenv.Load(); envErr != nil {
 		fmt.Printf("Error loading .env file: %v\n", envErr)
-		return 
+		return
 	}
 
 	LOG_FILE := os.Getenv("LOG_FILE")
@@ -34,10 +34,10 @@ func main() {
 		Level: slog.LevelInfo,
 	}
 
-	file, fileErr := os.OpenFile(LOG_FILE, os.O_CREATE | os.O_WRONLY | os.O_APPEND, 0666)
+	file, fileErr := os.OpenFile(LOG_FILE, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if fileErr != nil {
 		fmt.Printf("Error opening log file: %v\n", fileErr)
-		return 
+		return
 	}
 
 	defer file.Close()
@@ -95,3 +95,4 @@ func main() {
 		println("Error:", err.Error())
 	}
 }
+

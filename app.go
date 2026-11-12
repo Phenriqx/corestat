@@ -248,9 +248,9 @@ func (a *App) GetProcesses() (*helpers.ProcessInformation, error) {
 			slog.Error("Error loading process CPU percent: ", "err", err)
 			continue
 		}
-		PID, err := parentProcess.Ppid()
+		Ppid, err := parentProcess.Ppid()
 		if err != nil {
-			slog.Error("Error loading process PID: ", "err", err)
+			slog.Error("Error loading process PPID: ", "err", err)
 			continue
 		}
 		memory, err := parentProcess.MemoryInfo()
@@ -283,7 +283,7 @@ func (a *App) GetProcesses() (*helpers.ProcessInformation, error) {
 			Cwd:        cwd,
 			HostUser:   hostUser,
 			CPUPercent: cpuPercent,
-			PID:        PID,
+			PID:        Ppid,
 			MemoryInfo: *memory,
 			Threads:    threads,
 			Children:   *procChild,
@@ -355,5 +355,6 @@ func (a *App) GetRemainingBattery() (int, error) {
 		return 1, err
 	}
 
-	return battery, nil 
+	return battery, nil
 }
+
